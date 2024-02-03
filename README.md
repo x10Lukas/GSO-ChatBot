@@ -10,7 +10,8 @@
 </div>
 
 **GSO ChatBot UML**   
-<img src="./Referenzen/GSOPizzaUML.png" width=50% >
+<img src="./Referenzen/Datenmodel.png" width=50% >
+<img src="./Referenzen/FunktionsModel.png" width=50% >
 
 **Users Tabelle**   
 | Id | Username | Passwort | Token |
