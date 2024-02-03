@@ -9,9 +9,11 @@
         <h1>🤖GSO ChatBot</h1>
 </div>
 
-**GSO ChatBot UML**   
-<img src="./Referenzen/Datenmodel.png" width=50% >
-<img src="./Referenzen/FunktionsModel.png" width=50% >
+**GSO ChatBot UML** 
+<div style="display: flex; justify-content: space-between;">
+    <img src="./Referenzen/Datenmodel.png" width=50% >
+    <img src="./Referenzen/FunktionsModel.png" width=44% >
+</div>
 
 **Users Tabelle**   
 | Id | Username | Passwort | Token |
