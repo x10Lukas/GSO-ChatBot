@@ -10,7 +10,8 @@ namespace Aufgabe_GSOChatBot
     {
         public int Id { get; set; }
         public User User { get; set; } = null!;
-
         public List<Nachricht> Nachricht { get; set; }
+        public string Name { get; set; }
+        public string Charakter { get; set; } = null!;
     }
 }

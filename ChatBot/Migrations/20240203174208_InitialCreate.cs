@@ -30,7 +30,9 @@ namespace Aufgabe_GSOChatBot.Migrations
                 {
                     Id = table.Column<int>(type: "INTEGER", nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
-                    UserId = table.Column<int>(type: "INTEGER", nullable: false)
+                    UserId = table.Column<int>(type: "INTEGER", nullable: false),
+                    Name = table.Column<string>(type: "TEXT", nullable: false),
+                    Charakter = table.Column<string>(type: "TEXT", nullable: false)
                 },
                 constraints: table =>
                 {
