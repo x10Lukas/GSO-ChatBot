@@ -105,6 +105,7 @@ namespace Aufgabe_GSOChatBot
 
             Console.WriteLine("\nLogin successful!");
             Console.ReadKey();
+            NachrichtSchreiben();
         }
 
         public async void UserRegistrieren()
@@ -127,40 +128,62 @@ namespace Aufgabe_GSOChatBot
             AppStart();
         }
 
-        public async void TokenSpeichern()
-        {
-
-        }
-
-        public async void NeuerChat()
-        {
-            Console.Clear();
-            Console.WriteLine("Neuer Chat\n");
-            Console.ForegroundColor = ConsoleColor.DarkMagenta;
-            Console.Write("1");
-            Console.ResetColor();
-            Console.Write("] Neuen Chat erstellen\n[");
-            Console.ForegroundColor = ConsoleColor.DarkMagenta;
-            Console.Write("2");
-            Console.ResetColor();
-            Console.Write("] Hauptmenü");
-            Console.Write("\n\nBitte wählen Sie eine Option: ");
-            string option = Console.ReadLine();
-
-            switch (option)
-            {
-                case "1":
-                    Console.WriteLine("Test");
-                    break;
-                case "":
-                    AppStart();
-                    break;
-            }
-        }
-
         public async void NachrichtSchreiben()
         {
+            Console.Clear();
+            Console.WriteLine("Nachricht schreiben\n");
 
+            Console.Write("Ihre Nachricht: ");
+            string userInput = Console.ReadLine();
+
+            string gptResponse = await GenerateGPT3Response(userInput);
+
+            Console.WriteLine("ChatBot: " + gptResponse);
+            Console.ReadKey();
+        }
+
+        private async Task<string> GenerateGPT3Response(string userMessage)
+        {
+            string openaiApiKey = "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";
+            string openaiEndpoint = "https://api.openai.com/v1/completions";
+
+            using (HttpClient client = new HttpClient())
+            {
+                client.DefaultRequestHeaders.Add("Authorization", $"Bearer {openaiApiKey}");
+
+                // Set up the request data
+                var requestData = new
+                {
+                    model = "gpt-3.5-turbo",
+                    prompt = userMessage,
+                    max_tokens = 150
+                };
+
+                var content = new StringContent(System.Text.Json.JsonSerializer.Serialize(requestData), Encoding.UTF8, "application/json");
+
+                try
+                {
+                    var response = await client.PostAsync(openaiEndpoint, content);
+
+                    if (response.IsSuccessStatusCode)
+                    {
+                        string responseBody = await response.Content.ReadAsStringAsync();
+                        var json = System.Text.Json.JsonDocument.Parse(responseBody);
+                        return json.RootElement.GetProperty("choices")[0].GetProperty("text").GetString();
+                    }
+                    else
+                    {
+                        Console.WriteLine($"Error calling OpenAI API: {response.StatusCode} - {response.ReasonPhrase}");
+                        Console.WriteLine(await response.Content.ReadAsStringAsync());
+                        return "Error generating response";
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Exception: {ex.Message}");
+                    return "Error generating response";
+                }
+            }
         }
 
         public void ClearCurrentConsoleLine(int from, int to)
@@ -174,5 +197,6 @@ namespace Aufgabe_GSOChatBot
 
             Console.SetCursorPosition(0, from);
         }
+
     }
 }
