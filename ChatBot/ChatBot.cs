@@ -9,6 +9,9 @@ using System.Runtime.InteropServices;
 using System.Xml.Linq;
 using Aufgabe_GSOChatBot.Daten;
 using System.Text.Json;
+using Azure.AI.OpenAI;
+using Azure;
+using Aufgabe_GSOChatBot.Model;
 
 namespace Aufgabe_GSOChatBot
 {
@@ -106,7 +109,10 @@ namespace Aufgabe_GSOChatBot
 
             Console.WriteLine("\nLogin successful!");
             Console.ReadKey();
-            NachrichtSchreiben();
+
+            GSO_ChatBot_Chat app = new GSO_ChatBot_Chat();
+
+            app.ChatStart();
         }
 
         public async void UserRegistrieren()
@@ -127,123 +133,6 @@ namespace Aufgabe_GSOChatBot
             dbContext.Users.Add(neuerUser);
             await dbContext.SaveChangesAsync();
             AppStart();
-        }
-
-        public async void NachrichtSchreiben()
-        {
-            Console.Clear();
-            Console.WriteLine("Nachricht schreiben\n");
-
-            Console.Write("Ihre Nachricht: ");
-            string userInput = Console.ReadLine();
-
-            if (userInput != null)
-            {
-                try
-                {
-                    List<string> userMessages = new List<string> { userInput };
-
-                    string gptResponse = await GenerateGPT3Response(userMessages);
-
-                    Console.WriteLine("ChatBot: " + gptResponse);
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine($"Error: {ex.Message}");
-                }
-            }
-            else
-            {
-                Console.WriteLine("Error: User input cannot be null.");
-            }
-
-            Console.ReadKey();
-        }
-
-        private async Task<string> GenerateGPT3Response(List<string> userMessages)
-        {
-            string openaiApiKey = "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";
-            string openaiEndpoint = "https://api.openai.com/v1/chat/completions";
-
-            using (HttpClient client = new HttpClient())
-            {
-                client.DefaultRequestHeaders.Add("Authorization", $"Bearer {openaiApiKey}");
-
-                // Baue die Liste der Nachrichten auf
-                var messages = new List<object>
-                {
-                    new { role = "system", content = "Du bist Coding-Assistent" }
-                };
-
-                foreach (var userMessage in userMessages)
-                {
-                    messages.Add(new { role = "user", content = userMessage });
-                }
-
-                var requestData = new
-                {
-                    model = "gpt-3.5-turbo",
-                    messages = messages,
-                    max_tokens = 150
-                };
-
-                var content = new StringContent(System.Text.Json.JsonSerializer.Serialize(requestData), Encoding.UTF8, "application/json");
-
-                try
-                {
-                    var response = await client.PostAsync(openaiEndpoint, content);
-
-                    if (response.IsSuccessStatusCode)
-                    {
-                        string responseBody = await response.Content.ReadAsStringAsync();
-                        var json = System.Text.Json.JsonDocument.Parse(responseBody);
-
-                        if (json.RootElement.TryGetProperty("choices", out var choices))
-                        {
-                            if (choices.ValueKind == JsonValueKind.Array && choices.EnumerateArray().Any())
-                            {
-
-                                if (choices[0].TryGetProperty("message", out var message))
-                                {
-                                    if (message.TryGetProperty("content", out var contentProperty))
-                                    {
-                                        return contentProperty.GetString();
-                                    }
-                                    else
-                                    {
-                                        Console.WriteLine("Error: 'content' key not found in the message.");
-                                    }
-                                }
-                                else
-                                {
-                                    Console.WriteLine("Error: 'message' key not found in the first choice.");
-                                }
-                            }
-                            else
-                            {
-                                Console.WriteLine("Error: 'choices' array is empty or not an array.");
-                            }
-                        }
-                        else
-                        {
-                            Console.WriteLine("Error: 'choices' key not found in the JSON response.");
-                        }
-
-                        return "Error generating response";
-                    }
-                    else
-                    {
-                        Console.WriteLine($"Error calling OpenAI API: {response.StatusCode} - {response.ReasonPhrase}");
-                        Console.WriteLine(await response.Content.ReadAsStringAsync());
-                        return "Error generating response";
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine($"Exception: {ex.Message}");
-                    return "Error generating response";
-                }
-            }
         }
 
         public void ClearCurrentConsoleLine(int from, int to)
