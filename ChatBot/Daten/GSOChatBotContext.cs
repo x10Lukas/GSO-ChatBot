@@ -34,7 +34,7 @@ namespace Aufgabe_GSOChatBot.Daten
             if (!optionsBuilder.IsConfigured)
             {
                 // Konfigurieren der Verwendung der SQLite-Datenbank mit dem angegebenen Verbindungsstring
-                optionsBuilder.UseSqlite(@"Data Source=C:\Users\Lukas\source\repos\ChatBot\ChatBot\gso_chatbot.db");
+                optionsBuilder.UseSqlite(@"Data Source=C:\Users\lukas\source\repos\GSO-ChatBot\ChatBot\gso_chatbot.db");
             }
 
             // Immer die Basis-Methode aufrufen, um das Basisverhalten einzuschließen

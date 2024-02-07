@@ -8,6 +8,7 @@ using System.Globalization;
 using System.Runtime.InteropServices;
 using System.Xml.Linq;
 using Aufgabe_GSOChatBot.Daten;
+using System.Text.Json;
 
 namespace Aufgabe_GSOChatBot
 {
@@ -136,26 +137,53 @@ namespace Aufgabe_GSOChatBot
             Console.Write("Ihre Nachricht: ");
             string userInput = Console.ReadLine();
 
-            string gptResponse = await GenerateGPT3Response(userInput);
+            if (userInput != null)
+            {
+                try
+                {
+                    List<string> userMessages = new List<string> { userInput };
 
-            Console.WriteLine("ChatBot: " + gptResponse);
+                    string gptResponse = await GenerateGPT3Response(userMessages);
+
+                    Console.WriteLine("ChatBot: " + gptResponse);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Error: {ex.Message}");
+                }
+            }
+            else
+            {
+                Console.WriteLine("Error: User input cannot be null.");
+            }
+
             Console.ReadKey();
         }
 
-        private async Task<string> GenerateGPT3Response(string userMessage)
+        private async Task<string> GenerateGPT3Response(List<string> userMessages)
         {
-            string openaiApiKey = "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";
-            string openaiEndpoint = "https://api.openai.com/v1/completions";
+            string openaiApiKey = "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";
+            string openaiEndpoint = "https://api.openai.com/v1/chat/completions";
 
             using (HttpClient client = new HttpClient())
             {
                 client.DefaultRequestHeaders.Add("Authorization", $"Bearer {openaiApiKey}");
 
-                // Set up the request data
+                // Baue die Liste der Nachrichten auf
+                var messages = new List<object>
+                {
+                    new { role = "system", content = "Du bist Coding-Assistent" }
+                };
+
+                foreach (var userMessage in userMessages)
+                {
+                    messages.Add(new { role = "user", content = userMessage });
+                }
+
                 var requestData = new
                 {
                     model = "gpt-3.5-turbo",
-                    prompt = userMessage,
+                    messages = messages,
                     max_tokens = 150
                 };
 
@@ -169,7 +197,39 @@ namespace Aufgabe_GSOChatBot
                     {
                         string responseBody = await response.Content.ReadAsStringAsync();
                         var json = System.Text.Json.JsonDocument.Parse(responseBody);
-                        return json.RootElement.GetProperty("choices")[0].GetProperty("text").GetString();
+
+                        if (json.RootElement.TryGetProperty("choices", out var choices))
+                        {
+                            if (choices.ValueKind == JsonValueKind.Array && choices.EnumerateArray().Any())
+                            {
+
+                                if (choices[0].TryGetProperty("message", out var message))
+                                {
+                                    if (message.TryGetProperty("content", out var contentProperty))
+                                    {
+                                        return contentProperty.GetString();
+                                    }
+                                    else
+                                    {
+                                        Console.WriteLine("Error: 'content' key not found in the message.");
+                                    }
+                                }
+                                else
+                                {
+                                    Console.WriteLine("Error: 'message' key not found in the first choice.");
+                                }
+                            }
+                            else
+                            {
+                                Console.WriteLine("Error: 'choices' array is empty or not an array.");
+                            }
+                        }
+                        else
+                        {
+                            Console.WriteLine("Error: 'choices' key not found in the JSON response.");
+                        }
+
+                        return "Error generating response";
                     }
                     else
                     {
