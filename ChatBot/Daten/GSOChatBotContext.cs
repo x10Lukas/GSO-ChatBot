@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Aufgabe_GSOChatBot.Model;
 using Microsoft.EntityFrameworkCore;
 
 namespace Aufgabe_GSOChatBot.Daten

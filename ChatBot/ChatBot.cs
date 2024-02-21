@@ -17,6 +17,8 @@ namespace Aufgabe_GSOChatBot
 {
     internal class GSO_ChatBot_App
     {
+        internal static User aktueller_user = new User();
+
         private GSOChatBotContext dbContext = new GSOChatBotContext();
         public void AppStart()
         {
@@ -57,8 +59,8 @@ namespace Aufgabe_GSOChatBot
                         (int, int) cPosAM = Console.GetCursorPosition();
 
                         ClearCurrentConsoleLine(cPosBM.Item2, cPosAM.Item2);
-                        break;
                         Console.ReadKey();
+                        break;
                 }
             } while (!Exit);
         }
@@ -69,16 +71,15 @@ namespace Aufgabe_GSOChatBot
             Console.WriteLine("Anmeldung\n");
 
             string username;
-            User user;
 
             do
             {
                 (int, int) cPosBM = Console.GetCursorPosition();
                 Console.Write("Username: ");
                 username = Console.ReadLine();
-                user = await dbContext.Users.FirstOrDefaultAsync(u => u.Username == username);
+                aktueller_user = await dbContext.Users.FirstOrDefaultAsync(u => u.Username == username);
 
-                if (user == null)
+                if (aktueller_user == null)
                 {
                     Console.WriteLine("Ungültiger Benutzername. Bitte versuche es erneut.");
                     Console.ReadKey();
@@ -87,7 +88,7 @@ namespace Aufgabe_GSOChatBot
                     ClearCurrentConsoleLine(cPosBM.Item2, cPosAM.Item2);
                 }
 
-            } while (user == null);
+            } while (aktueller_user == null);
 
             string passwort;
 
@@ -96,7 +97,7 @@ namespace Aufgabe_GSOChatBot
                 (int, int) cPosBM = Console.GetCursorPosition();
                 Console.Write("Passwort: ");
                 passwort = Console.ReadLine();
-                if (user.Passwort != passwort)
+                if (aktueller_user.Passwort != passwort)
                 {
                     Console.WriteLine("Ungültiges Passwort. Bitte versuche es erneut.");
                     Console.ReadKey();
@@ -105,14 +106,26 @@ namespace Aufgabe_GSOChatBot
                     ClearCurrentConsoleLine(cPosBM.Item2, cPosAM.Item2);
                 }
 
-            } while (user.Passwort != passwort);
+            } while (aktueller_user.Passwort != passwort);
 
-            Console.WriteLine("\nLogin successful!");
-            Console.ReadKey();
+            if (string.IsNullOrEmpty(aktueller_user.Token))
+            {
+                Console.WriteLine("\nBevor Sie einen neuen Chat erstellen können, müssen Sie zuerst ihren API-Token zu Ihrem Account hinzufügen");
+                Console.WriteLine("Den API-Token bekommen Sie auf der Seite: https://platform.openai.com/api-keys");
+                Console.WriteLine("\nDrücken Sie Enter um fortzufahren.");
+                Console.ReadKey();
+                GSO_ChatBot_User app = new GSO_ChatBot_User();
 
-            GSO_ChatBot_Chat app = new GSO_ChatBot_Chat();
+                app.TokenSpeichern();
+                return;
+            }
+            else
+            {
+                Console.WriteLine("\nLogin erfolgreich!");
+                GSO_ChatBot_User app = new GSO_ChatBot_User();
 
-            app.ChatStart();
+                app.NeuerChat();
+            }
         }
 
         public async void UserRegistrieren()
@@ -132,6 +145,9 @@ namespace Aufgabe_GSOChatBot
 
             dbContext.Users.Add(neuerUser);
             await dbContext.SaveChangesAsync();
+
+
+
             AppStart();
         }
 

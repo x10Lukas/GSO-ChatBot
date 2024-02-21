@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Aufgabe_GSOChatBot
+namespace Aufgabe_GSOChatBot.Model
 {
     internal class Nachricht
     {
