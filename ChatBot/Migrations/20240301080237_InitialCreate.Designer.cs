@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Aufgabe_GSOChatBot.Migrations
 {
     [DbContext(typeof(GSOChatBotContext))]
-    [Migration("20240203174208_InitialCreate")]
+    [Migration("20240301080237_InitialCreate")]
     partial class InitialCreate
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -19,7 +19,7 @@ namespace Aufgabe_GSOChatBot.Migrations
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "6.0.0");
 
-            modelBuilder.Entity("Aufgabe_GSOChatBot.Chat", b =>
+            modelBuilder.Entity("Aufgabe_GSOChatBot.Model.Chat", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -38,12 +38,10 @@ namespace Aufgabe_GSOChatBot.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("UserId");
-
                     b.ToTable("Chats");
                 });
 
-            modelBuilder.Entity("Aufgabe_GSOChatBot.Nachricht", b =>
+            modelBuilder.Entity("Aufgabe_GSOChatBot.Model.Nachricht", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -73,7 +71,7 @@ namespace Aufgabe_GSOChatBot.Migrations
                     b.ToTable("Nachrichten");
                 });
 
-            modelBuilder.Entity("Aufgabe_GSOChatBot.User", b =>
+            modelBuilder.Entity("Aufgabe_GSOChatBot.Model.User", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -96,20 +94,9 @@ namespace Aufgabe_GSOChatBot.Migrations
                     b.ToTable("Users");
                 });
 
-            modelBuilder.Entity("Aufgabe_GSOChatBot.Chat", b =>
+            modelBuilder.Entity("Aufgabe_GSOChatBot.Model.Nachricht", b =>
                 {
-                    b.HasOne("Aufgabe_GSOChatBot.User", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("User");
-                });
-
-            modelBuilder.Entity("Aufgabe_GSOChatBot.Nachricht", b =>
-                {
-                    b.HasOne("Aufgabe_GSOChatBot.Chat", "Chat")
+                    b.HasOne("Aufgabe_GSOChatBot.Model.Chat", "Chat")
                         .WithMany("Nachricht")
                         .HasForeignKey("ChatId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -118,7 +105,7 @@ namespace Aufgabe_GSOChatBot.Migrations
                     b.Navigation("Chat");
                 });
 
-            modelBuilder.Entity("Aufgabe_GSOChatBot.Chat", b =>
+            modelBuilder.Entity("Aufgabe_GSOChatBot.Model.Chat", b =>
                 {
                     b.Navigation("Nachricht");
                 });

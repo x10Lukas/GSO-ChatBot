@@ -71,6 +71,7 @@ namespace Aufgabe_GSOChatBot
             Console.WriteLine("Anmeldung\n");
 
             string username;
+            string passwort;
 
             do
             {
@@ -87,10 +88,7 @@ namespace Aufgabe_GSOChatBot
 
                     ClearCurrentConsoleLine(cPosBM.Item2, cPosAM.Item2);
                 }
-
             } while (aktueller_user == null);
-
-            string passwort;
 
             do
             {
@@ -105,27 +103,8 @@ namespace Aufgabe_GSOChatBot
 
                     ClearCurrentConsoleLine(cPosBM.Item2, cPosAM.Item2);
                 }
-
+                NeuerChat();
             } while (aktueller_user.Passwort != passwort);
-
-            if (string.IsNullOrEmpty(aktueller_user.Token))
-            {
-                Console.WriteLine("\nBevor Sie einen neuen Chat erstellen können, müssen Sie zuerst ihren API-Token zu Ihrem Account hinzufügen");
-                Console.WriteLine("Den API-Token bekommen Sie auf der Seite: https://platform.openai.com/api-keys");
-                Console.WriteLine("\nDrücken Sie Enter um fortzufahren.");
-                Console.ReadKey();
-                GSO_ChatBot_User app = new GSO_ChatBot_User();
-
-                app.TokenSpeichern();
-                return;
-            }
-            else
-            {
-                Console.WriteLine("\nLogin erfolgreich!");
-                GSO_ChatBot_User app = new GSO_ChatBot_User();
-
-                app.NeuerChat();
-            }
         }
 
         public async void UserRegistrieren()
@@ -136,19 +115,48 @@ namespace Aufgabe_GSOChatBot
             string username = Console.ReadLine();
             Console.Write("Passwort: ");
             string passwort = Console.ReadLine();
+            Console.Write("Token: ");
+            string token = Console.ReadLine();
 
             User neuerUser = new User
             {
                 Username = username,
-                Passwort = passwort
+                Passwort = passwort,
+                Token = token
             };
 
             dbContext.Users.Add(neuerUser);
             await dbContext.SaveChangesAsync();
 
-
-
             AppStart();
+        }
+
+        public async void NeuerChat()
+        {
+            Console.Clear();
+            Console.WriteLine("Neuer Chat\n");
+            Console.Write("[");
+            Console.ForegroundColor = ConsoleColor.DarkMagenta;
+            Console.Write("1");
+            Console.ResetColor();
+            Console.Write("] Chat erstellen\n[");
+            Console.ForegroundColor = ConsoleColor.DarkMagenta;
+            Console.Write("2");
+            Console.ResetColor();
+            Console.Write("] Chat öffnen");
+            Console.Write("\n\nBitte wählen Sie eine Option: ");
+            string option = Console.ReadLine();
+
+            switch (option)
+            {
+                case "1":
+                    GSO_ChatBot_Chat app = new GSO_ChatBot_Chat();
+                    app.ChatStart();
+                    break;
+                case "2":
+
+                    break;
+            }
         }
 
         public void ClearCurrentConsoleLine(int from, int to)

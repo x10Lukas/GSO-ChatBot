@@ -21,29 +21,29 @@ namespace Aufgabe_GSOChatBot.Model
 
             while (!exitChat)
             {
+                Console.Clear();
                 NachrichtSchreiben();
             }
         }
 
         public async void NachrichtSchreiben()
         {
-            Console.Clear();
             Console.WriteLine("Nachricht schreiben\n");
 
             List<string> conversation = new List<string>();
+            string chatName = GenerateUniqueChatName();
 
             do
             {
-                string userInput = GetUserInput();
+                Console.Write("Your message: ");
+                string userInput = Console.ReadLine();
 
                 if (userInput?.ToLower() == "exit")
                 {
                     exitChat = true;
                     break;
                 }
-
-                Console.Clear();
-                conversation.Add($"You\n{userInput}\n");
+                conversation.Add($"\n{userInput}\n");
 
                 try
                 {
@@ -54,8 +54,8 @@ namespace Aufgabe_GSOChatBot.Model
 
                     conversation.Add($"ChatGPT\n{gptResponse}\n");
 
-                    SaveMessageToDatabase("You", userInput);
-                    SaveMessageToDatabase("ChatGPT", gptResponse);
+                    NachrichtSpeichern("You", userInput, chatName);
+                    NachrichtSpeichern("ChatGPT", gptResponse, chatName);
 
                     DisplayConversation(conversation);
                 }
@@ -74,19 +74,22 @@ namespace Aufgabe_GSOChatBot.Model
             Console.WriteLine("Press Enter to exit.");
             Console.ReadLine();
         }
-        private void SaveMessageToDatabase(string sender, string message)
-        {
-            int chatId = dbContext.Chats
-                .Where(c => c.Name == "Test")
-                .Select(c => c.Id)
-                .FirstOrDefault();
 
-            if (chatId == 0)
+        private void NachrichtSpeichern(string sender, string message, string chatName)
+        {
+            var existingChat = dbContext.Chats
+                .FirstOrDefault(c => c.Name == chatName && c.UserId == aktueller_user.Id);
+
+            int chatId;
+
+            if (existingChat == null)
             {
+                Console.WriteLine($"Creating a new chat with name: {chatName}");
+
                 var newChat = new Chat
                 {
-                    Name = GenerateUniqueName(),
-                    User = aktueller_user,
+                    Name = chatName,
+                    UserId = aktueller_user.Id,
                     Charakter = "UserCharacter"
                 };
 
@@ -94,45 +97,18 @@ namespace Aufgabe_GSOChatBot.Model
                 dbContext.SaveChanges();
 
                 chatId = newChat.Id;
+
+                Console.WriteLine($"New chat created with name: {chatName}");
             }
-
-            var newMessage = new Nachricht
+            else
             {
-                Content = message,
-                Sender = sender,
-                Gesendet = DateTime.Now,
-                ChatId = chatId,
-                ParenId = 0
-            };
-
-            dbContext.Nachrichten.Add(newMessage);
-            dbContext.SaveChanges();
-
-            int messageId = newMessage.Id;
-
-            if (messageId != 0)
-            {
-                var responseMessage = dbContext.Nachrichten
-                    .Where(m => m.Content == message && m.ChatId == chatId && m.ParenId == 0)
-                    .FirstOrDefault();
-
-                if (responseMessage != null)
-                {
-                    responseMessage.ParenId = messageId;
-                    dbContext.SaveChanges();
-                }
+                chatId = existingChat.Id;
             }
         }
-        private string GenerateUniqueName()
+
+        private string GenerateUniqueChatName()
         {
-            // Hier kannst du eine Logik implementieren, um einen eindeutigen Namen zu generieren
-            // Zum Beispiel könntest du einen Basisnamen und eine eindeutige Nummer kombinieren
-            return "GeneratedName" + Guid.NewGuid().ToString("N");
-        }
-        private string GetUserInput()
-        {
-            Console.Write("Your message: ");
-            return Console.ReadLine();
+            return "Chat_" + Guid.NewGuid().ToString("N");
         }
 
         private void DisplayConversation(List<string> conversation)
@@ -225,6 +201,22 @@ namespace Aufgabe_GSOChatBot.Model
                     Console.WriteLine($"Exception: {ex.Message}");
                     return "Error generating response";
                 }
+            }
+        }
+
+        static string GetFirstNChars(string input, int n)
+        {
+            // Check if the input string is not null
+            if (!string.IsNullOrEmpty(input))
+            {
+                // Take the first n characters if available, otherwise take the entire string
+                return input.Length >= n ? input.Substring(0, n) : input;
+            }
+            else
+            {
+                // Handle the case where the input string is null
+                // You may choose to throw an exception or handle it differently based on your requirements
+                return input;
             }
         }
     }

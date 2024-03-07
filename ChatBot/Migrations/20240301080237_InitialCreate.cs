@@ -10,21 +10,6 @@ namespace Aufgabe_GSOChatBot.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
-                name: "Users",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "INTEGER", nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
-                    Username = table.Column<string>(type: "TEXT", nullable: false),
-                    Passwort = table.Column<string>(type: "TEXT", nullable: false),
-                    Token = table.Column<string>(type: "TEXT", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Users", x => x.Id);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "Chats",
                 columns: table => new
                 {
@@ -37,12 +22,21 @@ namespace Aufgabe_GSOChatBot.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Chats", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_Chats_Users_UserId",
-                        column: x => x.UserId,
-                        principalTable: "Users",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Users",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "INTEGER", nullable: false)
+                        .Annotation("Sqlite:Autoincrement", true),
+                    Username = table.Column<string>(type: "TEXT", nullable: false),
+                    Passwort = table.Column<string>(type: "TEXT", nullable: false),
+                    Token = table.Column<string>(type: "TEXT", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Users", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -69,11 +63,6 @@ namespace Aufgabe_GSOChatBot.Migrations
                 });
 
             migrationBuilder.CreateIndex(
-                name: "IX_Chats_UserId",
-                table: "Chats",
-                column: "UserId");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_Nachrichten_ChatId",
                 table: "Nachrichten",
                 column: "ChatId");
@@ -85,10 +74,10 @@ namespace Aufgabe_GSOChatBot.Migrations
                 name: "Nachrichten");
 
             migrationBuilder.DropTable(
-                name: "Chats");
+                name: "Users");
 
             migrationBuilder.DropTable(
-                name: "Users");
+                name: "Chats");
         }
     }
 }
