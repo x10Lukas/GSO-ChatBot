@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Aufgabe_GSOChatBot.Migrations
 {
     [DbContext(typeof(GSOChatBotContext))]
-    [Migration("20240301080237_InitialCreate")]
+    [Migration("20240307113953_InitialCreate")]
     partial class InitialCreate
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

@@ -128,6 +128,8 @@ namespace Aufgabe_GSOChatBot
             dbContext.Users.Add(neuerUser);
             await dbContext.SaveChangesAsync();
 
+            Console.WriteLine("\nSie wurden Erfolgreich Registriert!");
+            Console.ReadKey();
             AppStart();
         }
 
@@ -154,8 +156,46 @@ namespace Aufgabe_GSOChatBot
                     app.ChatStart();
                     break;
                 case "2":
-
+                    AlleNachrichtenAnzeigen();
                     break;
+            }
+        }
+
+        public void AlleNachrichtenAnzeigen()
+        {
+            Console.Write("Geben Sie die Chat-ID ein: ");
+            if (int.TryParse(Console.ReadLine(), out int chatId))
+            {
+                using (var db = new GSOChatBotContext())
+                {
+                    var nachrichten = db.Nachrichten.Where(n => n.ChatId == chatId).ToList();
+
+                    if (nachrichten.Any())
+                    {
+                        Console.Clear();
+                        Console.WriteLine($"Chat ID: {chatId}");
+                        Console.WriteLine($"Alle Nachrichten im Chat {chatId}:");
+
+                        foreach (var nachricht in nachrichten)
+                        {
+                            Console.WriteLine($"\n{nachricht.Sender}\n{nachricht.Content}");
+                        }
+                        Console.ReadKey();
+                        NeuerChat();
+                    }
+                    else
+                    {
+                        Console.WriteLine($"Keine Nachrichten im Chat {chatId} vorhanden.");
+                        Console.ReadKey();
+                        NeuerChat();
+                    }
+                }
+            }
+            else
+            {
+                Console.WriteLine("Ungültige Eingabe. Bitte geben Sie eine gültige Chat-ID ein.");
+                Console.ReadKey();
+                NeuerChat();
             }
         }
 

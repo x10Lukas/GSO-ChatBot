@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
@@ -14,7 +15,13 @@ namespace Aufgabe_GSOChatBot.Model
     {
         private GSOChatBotContext dbContext = new GSOChatBotContext();
         private bool exitChat;
-        
+        private Chat chat_active = new Chat();
+
+        internal GSO_ChatBot_Chat()
+        {
+            chat_active = null;
+        }
+
         public void ChatStart()
         {
             exitChat = false;
@@ -31,7 +38,11 @@ namespace Aufgabe_GSOChatBot.Model
             Console.WriteLine("Nachricht schreiben\n");
 
             List<string> conversation = new List<string>();
-            string chatName = GenerateUniqueChatName();
+
+            if (chat_active == null)
+            {
+                ChatErstellen();
+            }
 
             do
             {
@@ -54,10 +65,13 @@ namespace Aufgabe_GSOChatBot.Model
 
                     conversation.Add($"ChatGPT\n{gptResponse}\n");
 
-                    NachrichtSpeichern("You", userInput, chatName);
-                    NachrichtSpeichern("ChatGPT", gptResponse, chatName);
+                    await NachrichtSpeichern("You", userInput);
+                    await NachrichtSpeichern("ChatGPT", gptResponse);
 
-                    DisplayConversation(conversation);
+                    foreach (var message in conversation)
+                    {
+                        Console.WriteLine(message);
+                    }
                 }
                 catch (Exception ex)
                 {
@@ -72,52 +86,64 @@ namespace Aufgabe_GSOChatBot.Model
             } while (!exitChat);
 
             Console.WriteLine("Press Enter to exit.");
-            Console.ReadLine();
+            Console.ReadKey();
+            AppStart();
         }
 
-        private void NachrichtSpeichern(string sender, string message, string chatName)
+        private string GenerateRandomString(Random random, string chars, int length)
         {
-            var existingChat = dbContext.Chats
-                .FirstOrDefault(c => c.Name == chatName && c.UserId == aktueller_user.Id);
+            return new string(Enumerable.Repeat(chars, length)
+              .Select(s => s[random.Next(s.Length)]).ToArray());
+        }
 
-            int chatId;
-
-            if (existingChat == null)
+        private async Task ChatErstellen()
+        {
+            var newChat = new Chat
             {
-                Console.WriteLine($"Creating a new chat with name: {chatName}");
+                UserId = aktueller_user.Id,
+                Name = GenerateRandomString(new Random(), "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz", 8),
+                Charakter = "UserCharacter"
+            };
 
-                var newChat = new Chat
+            try
+            {
+                dbContext.Chats.Add(newChat);
+
+                await dbContext.SaveChangesAsync();
+                Console.WriteLine($"chat_active nach Speichern: {newChat}");
+                chat_active = newChat;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Exception: {ex.Message}");
+            }
+        }
+
+        private async Task NachrichtSpeichern(string sender, string message)
+        {
+            try
+            {
+                var newMessage = new Nachricht
                 {
-                    Name = chatName,
-                    UserId = aktueller_user.Id,
-                    Charakter = "UserCharacter"
+                    Content = message,
+                    Gesendet = DateTime.Now,
+                    Sender = sender,
+                    Chat = chat_active
                 };
 
-                dbContext.Chats.Add(newChat);
-                dbContext.SaveChanges();
+                Console.WriteLine($"chat_active vor Speichern der Nachricht: {chat_active}");
+                chat_active.Nachricht.Add(newMessage);
+                dbContext.Nachrichten.Add(newMessage);
 
-                chatId = newChat.Id;
-
-                Console.WriteLine($"New chat created with name: {chatName}");
+                await dbContext.SaveChangesAsync();
             }
-            else
+            catch (Exception ex)
             {
-                chatId = existingChat.Id;
+                Console.WriteLine($"Fehler beim Speichern der Nachricht: {ex.Message}");
             }
         }
 
-        private string GenerateUniqueChatName()
-        {
-            return "Chat_" + Guid.NewGuid().ToString("N");
-        }
 
-        private void DisplayConversation(List<string> conversation)
-        {
-            foreach (var message in conversation)
-            {
-                Console.WriteLine(message);
-            }
-        }
 
         private async Task<string> GenerateGPT3Response(List<string> userMessages)
         {
@@ -206,16 +232,12 @@ namespace Aufgabe_GSOChatBot.Model
 
         static string GetFirstNChars(string input, int n)
         {
-            // Check if the input string is not null
             if (!string.IsNullOrEmpty(input))
             {
-                // Take the first n characters if available, otherwise take the entire string
                 return input.Length >= n ? input.Substring(0, n) : input;
             }
             else
             {
-                // Handle the case where the input string is null
-                // You may choose to throw an exception or handle it differently based on your requirements
                 return input;
             }
         }
