@@ -152,7 +152,7 @@ namespace Aufgabe_GSOChatBot
             switch (option)
             {
                 case "1":
-                    GSO_ChatBot_Chat app = new GSO_ChatBot_Chat();
+                    GSO_ChatBot_Chat app = new GSO_ChatBot_Chat(null);
                     app.ChatStart();
                     break;
                 case "2":
@@ -168,12 +168,12 @@ namespace Aufgabe_GSOChatBot
             {
                 using (var db = new GSOChatBotContext())
                 {
+                    Chat aktiver_chat =  db.Chats.FirstOrDefault(k => k.Id ==  chatId);
                     var nachrichten = db.Nachrichten.Where(n => n.ChatId == chatId).ToList();
 
                     if (nachrichten.Any())
                     {
                         Console.Clear();
-                        Console.WriteLine($"Chat ID: {chatId}");
                         Console.WriteLine($"Alle Nachrichten im Chat {chatId}:");
 
                         foreach (var nachricht in nachrichten)
@@ -181,7 +181,8 @@ namespace Aufgabe_GSOChatBot
                             Console.WriteLine($"\n{nachricht.Sender}\n{nachricht.Content}");
                         }
                         Console.ReadKey();
-                        NeuerChat();
+                        GSO_ChatBot_Chat chatBot = new GSO_ChatBot_Chat(aktiver_chat);
+                        chatBot.ChatStart();
                     }
                     else
                     {

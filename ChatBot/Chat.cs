@@ -17,26 +17,35 @@ namespace Aufgabe_GSOChatBot.Model
         private bool exitChat;
         private Chat chat_active = new Chat();
 
-        internal GSO_ChatBot_Chat()
+        internal GSO_ChatBot_Chat(Chat aktiv)
         {
-            chat_active = null;
+            if(aktiv != null)
+            {
+                chat_active = aktiv;
+            }
+            else
+            {
+                chat_active = null;
+            }
         }
 
         public void ChatStart()
         {
             exitChat = false;
 
+            if (chat_active == null)
+            {
+                ChatErstellen();
+            }
+
             while (!exitChat)
             {
-                Console.Clear();
                 NachrichtSchreiben();
             }
         }
 
         public async void NachrichtSchreiben()
         {
-            Console.WriteLine("Nachricht schreiben\n");
-
             List<string> conversation = new List<string>();
 
             if (chat_active == null)
@@ -46,7 +55,7 @@ namespace Aufgabe_GSOChatBot.Model
 
             do
             {
-                Console.Write("Your message: ");
+                Console.WriteLine("");
                 string userInput = Console.ReadLine();
 
                 if (userInput?.ToLower() == "exit")
@@ -54,12 +63,12 @@ namespace Aufgabe_GSOChatBot.Model
                     exitChat = true;
                     break;
                 }
-                conversation.Add($"\n{userInput}\n");
+
+                string currentMessage = $"\nYou {userInput}\n";
+                conversation.Add(currentMessage);
 
                 try
                 {
-                    Console.WriteLine("ChatGPT: Generating response...");
-
                     List<string> userMessages = new List<string> { userInput };
                     string gptResponse = await GenerateGPT3Response(userMessages);
 
@@ -68,6 +77,8 @@ namespace Aufgabe_GSOChatBot.Model
                     await NachrichtSpeichern("You", userInput);
                     await NachrichtSpeichern("ChatGPT", gptResponse);
 
+
+                    conversation.Remove(currentMessage);
                     foreach (var message in conversation)
                     {
                         Console.WriteLine(message);
@@ -87,7 +98,7 @@ namespace Aufgabe_GSOChatBot.Model
 
             Console.WriteLine("Press Enter to exit.");
             Console.ReadKey();
-            AppStart();
+            exitChat = true;
         }
 
         private string GenerateRandomString(Random random, string chars, int length)
@@ -102,6 +113,7 @@ namespace Aufgabe_GSOChatBot.Model
             {
                 UserId = aktueller_user.Id,
                 Name = GenerateRandomString(new Random(), "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz", 8),
+                Nachricht = new List<Nachricht>(),
                 Charakter = "UserCharacter"
             };
 
@@ -110,12 +122,15 @@ namespace Aufgabe_GSOChatBot.Model
                 dbContext.Chats.Add(newChat);
 
                 await dbContext.SaveChangesAsync();
-                Console.WriteLine($"chat_active nach Speichern: {newChat}");
                 chat_active = newChat;
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"Exception: {ex.Message}");
+                if (ex.InnerException != null)
+                {
+                    Console.WriteLine($"Inner Exception: {ex.InnerException.Message}");
+                }
             }
         }
 
@@ -128,11 +143,9 @@ namespace Aufgabe_GSOChatBot.Model
                     Content = message,
                     Gesendet = DateTime.Now,
                     Sender = sender,
-                    Chat = chat_active
+                    ChatId = chat_active.Id,
                 };
 
-                Console.WriteLine($"chat_active vor Speichern der Nachricht: {chat_active}");
-                chat_active.Nachricht.Add(newMessage);
                 dbContext.Nachrichten.Add(newMessage);
 
                 await dbContext.SaveChangesAsync();
@@ -140,10 +153,13 @@ namespace Aufgabe_GSOChatBot.Model
             catch (Exception ex)
             {
                 Console.WriteLine($"Fehler beim Speichern der Nachricht: {ex.Message}");
+
+                if (ex.InnerException != null)
+                {
+                    Console.WriteLine($"Innere Ausnahme: {ex.InnerException.Message}");
+                }
             }
         }
-
-
 
         private async Task<string> GenerateGPT3Response(List<string> userMessages)
         {
