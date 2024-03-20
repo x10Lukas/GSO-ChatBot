@@ -35,7 +35,7 @@ namespace Aufgabe_GSOChatBot.Model
 
             if (chat_active == null)
             {
-                ChatErstellen();
+                ChatSpeichern();
             }
 
             while (!exitChat)
@@ -50,7 +50,7 @@ namespace Aufgabe_GSOChatBot.Model
 
             if (chat_active == null)
             {
-                ChatErstellen();
+                ChatSpeichern();
             }
 
             do
@@ -101,13 +101,34 @@ namespace Aufgabe_GSOChatBot.Model
             exitChat = true;
         }
 
-        private string GenerateRandomString(Random random, string chars, int length)
+        private async Task NachrichtSpeichern(string sender, string message)
         {
-            return new string(Enumerable.Repeat(chars, length)
-              .Select(s => s[random.Next(s.Length)]).ToArray());
+            try
+            {
+                var newMessage = new Nachricht
+                {
+                    Content = message,
+                    Gesendet = DateTime.Now,
+                    Sender = sender,
+                    ChatId = chat_active.Id,
+                };
+
+                dbContext.Nachrichten.Add(newMessage);
+
+                await dbContext.SaveChangesAsync();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Fehler beim Speichern der Nachricht: {ex.Message}");
+
+                if (ex.InnerException != null)
+                {
+                    Console.WriteLine($"Innere Ausnahme: {ex.InnerException.Message}");
+                }
+            }
         }
 
-        private async Task ChatErstellen()
+        private async Task ChatSpeichern()
         {
             var newChat = new Chat
             {
@@ -134,31 +155,10 @@ namespace Aufgabe_GSOChatBot.Model
             }
         }
 
-        private async Task NachrichtSpeichern(string sender, string message)
+        private string GenerateRandomString(Random random, string chars, int length)
         {
-            try
-            {
-                var newMessage = new Nachricht
-                {
-                    Content = message,
-                    Gesendet = DateTime.Now,
-                    Sender = sender,
-                    ChatId = chat_active.Id,
-                };
-
-                dbContext.Nachrichten.Add(newMessage);
-
-                await dbContext.SaveChangesAsync();
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Fehler beim Speichern der Nachricht: {ex.Message}");
-
-                if (ex.InnerException != null)
-                {
-                    Console.WriteLine($"Innere Ausnahme: {ex.InnerException.Message}");
-                }
-            }
+            return new string(Enumerable.Repeat(chars, length)
+              .Select(s => s[random.Next(s.Length)]).ToArray());
         }
 
         private async Task<string> GenerateGPT3Response(List<string> userMessages)
