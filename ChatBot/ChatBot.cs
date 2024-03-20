@@ -22,47 +22,51 @@ namespace Aufgabe_GSOChatBot
         private GSOChatBotContext dbContext = new GSOChatBotContext();
         public void AppStart()
         {
-            bool Exit = false;
+            bool exit = false;
 
             do
             {
-                (int, int) cPosBM = Console.GetCursorPosition();
-                Console.Clear();
-                Console.WriteLine("CHAT BOT\n");
-                Console.WriteLine("Eingabe: exit  ->  beendet das Programm\n");
-                Console.Write("[");
-                Console.ForegroundColor = ConsoleColor.DarkMagenta;
-                Console.Write("1");
-                Console.ResetColor();
-                Console.Write("] Anmelden\n[");
-                Console.ForegroundColor = ConsoleColor.DarkMagenta;
-                Console.Write("2");
-                Console.ResetColor();
-                Console.Write("] Registrieren");
-                Console.Write("\n\nBitte wählen Sie eine Option: ");
-                string option = Console.ReadLine();
-
-                switch (option)
+                string option;
+                do
                 {
-                    case "1":
-                        UserEinloggen();
-                        break;
-                    case "2":
-                        UserRegistrieren();
-                        break;
-                    case "exit":
-                        Exit = true;
-                        break;
-                    default:
-                        Console.WriteLine("Ungültige Eingabe");
+                    Console.Clear();
+                    Console.WriteLine("CHAT BOT\n");
+                    Console.WriteLine("Eingabe: exit  ->  beendet das Programm\n");
+                    Console.Write("[");
+                    Console.ForegroundColor = ConsoleColor.DarkMagenta;
+                    Console.Write("1");
+                    Console.ResetColor();
+                    Console.Write("] Anmelden\n[");
+                    Console.ForegroundColor = ConsoleColor.DarkMagenta;
+                    Console.Write("2");
+                    Console.ResetColor();
+                    Console.Write("] Registrieren");
+                    Console.Write("\n\nBitte wählen Sie eine Option: ");
+                    option = Console.ReadLine();
 
-                        (int, int) cPosAM = Console.GetCursorPosition();
-
-                        ClearCurrentConsoleLine(cPosBM.Item2, cPosAM.Item2);
+                    if (!IsValidOption(option))
+                    {
+                        Console.WriteLine("Ungültige Eingabe. Bitte erneut eingeben.");
                         Console.ReadKey();
-                        break;
-                }
-            } while (!Exit);
+                    }
+                    else
+                    {
+                        switch (option)
+                        {
+                            case "1":
+                                UserEinloggen();
+                                break;
+                            case "2":
+                                UserRegistrieren();
+                                break;
+                            case "exit":
+                                exit = true;
+                                break;
+                        }
+                    }
+                } while (!IsValidOption(option));
+
+            } while (!exit);
         }
 
         public async void UserEinloggen()
@@ -71,7 +75,7 @@ namespace Aufgabe_GSOChatBot
             Console.WriteLine("Anmeldung\n");
 
             string username;
-            string passwort;
+            string passwort = "";
 
             do
             {
@@ -94,10 +98,25 @@ namespace Aufgabe_GSOChatBot
             {
                 (int, int) cPosBM = Console.GetCursorPosition();
                 Console.Write("Passwort: ");
-                passwort = Console.ReadLine();
+                ConsoleKeyInfo key;
+
+                while ((key = Console.ReadKey(true)).Key != ConsoleKey.Enter)
+                {
+                    if (key.Key == ConsoleKey.Backspace && passwort.Length > 0)
+                    {
+                        passwort = passwort[0..^1];
+                        Console.Write("\b \b");
+                    }
+                    else if (!char.IsControl(key.KeyChar))
+                    {
+                        passwort += key.KeyChar;
+                        Console.Write("*");
+                    }
+                }
+
                 if (aktueller_user.Passwort != passwort)
                 {
-                    Console.WriteLine("Ungültiges Passwort. Bitte versuche es erneut.");
+                    Console.WriteLine("\nUngültiges Passwort. Bitte versuche es erneut.");
                     Console.ReadKey();
                     (int, int) cPosAM = Console.GetCursorPosition();
 
@@ -133,32 +152,44 @@ namespace Aufgabe_GSOChatBot
             AppStart();
         }
 
-        public async void NeuerChat()
+        public void NeuerChat()
         {
-            Console.Clear();
-            Console.WriteLine("Neuer Chat\n");
-            Console.Write("[");
-            Console.ForegroundColor = ConsoleColor.DarkMagenta;
-            Console.Write("1");
-            Console.ResetColor();
-            Console.Write("] Chat erstellen\n[");
-            Console.ForegroundColor = ConsoleColor.DarkMagenta;
-            Console.Write("2");
-            Console.ResetColor();
-            Console.Write("] Chat öffnen");
-            Console.Write("\n\nBitte wählen Sie eine Option: ");
-            string option = Console.ReadLine();
-
-            switch (option)
+            string option;
+            do
             {
-                case "1":
-                    GSO_ChatBot_Chat app = new GSO_ChatBot_Chat(null);
-                    app.ChatStart();
-                    break;
-                case "2":
-                    AlleNachrichtenAnzeigen();
-                    break;
-            }
+                Console.Clear();
+                Console.WriteLine("Neuer Chat\n");
+                Console.Write("[");
+                Console.ForegroundColor = ConsoleColor.DarkMagenta;
+                Console.Write("1");
+                Console.ResetColor();
+                Console.Write("] Chat erstellen\n[");
+                Console.ForegroundColor = ConsoleColor.DarkMagenta;
+                Console.Write("2");
+                Console.ResetColor();
+                Console.Write("] Chat öffnen");
+                Console.Write("\n\nBitte wählen Sie eine Option: ");
+                option = Console.ReadLine();
+
+                if (!IsValidOption(option))
+                {
+                    Console.WriteLine("Ungültige Eingabe. Bitte erneut eingeben.");
+                    Console.ReadKey();
+                }
+                else
+                {
+                    switch (option)
+                    {
+                        case "1":
+                            GSO_ChatBot_Chat app = new GSO_ChatBot_Chat(null);
+                            app.ChatStart();
+                            break;
+                        case "2":
+                            AlleNachrichtenAnzeigen();
+                            break;
+                    }
+                }
+            } while (!IsValidOption(option));
         }
 
         public void AlleNachrichtenAnzeigen()
@@ -200,6 +231,11 @@ namespace Aufgabe_GSOChatBot
             }
         }
 
+        private bool IsValidOption(string input)
+        {
+            return input == "1" || input == "2" || input.ToLower() == "exit";
+        }
+
         public void ClearCurrentConsoleLine(int from, int to)
         {
 
@@ -211,6 +247,5 @@ namespace Aufgabe_GSOChatBot
 
             Console.SetCursorPosition(0, from);
         }
-
     }
 }

@@ -29,13 +29,13 @@ namespace Aufgabe_GSOChatBot.Model
             }
         }
 
-        public void ChatStart()
+        public async void ChatStart()
         {
             exitChat = false;
 
             if (chat_active == null)
             {
-                ChatSpeichern();
+                await ChatSpeichern();
             }
 
             while (!exitChat)
