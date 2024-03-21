@@ -55,7 +55,7 @@ namespace Aufgabe_GSOChatBot.Model
 
             do
             {
-                Console.WriteLine("");
+                Console.Write("");
                 string userInput = Console.ReadLine();
 
                 if (userInput?.ToLower() == "exit")
@@ -64,21 +64,17 @@ namespace Aufgabe_GSOChatBot.Model
                     break;
                 }
 
-                string currentMessage = $"\nYou {userInput}\n";
-                conversation.Add(currentMessage);
-
                 try
                 {
                     List<string> userMessages = new List<string> { userInput };
                     string gptResponse = await GenerateGPT3Response(userMessages);
 
+                    conversation.Add($"You\n{userInput}\n");
                     conversation.Add($"ChatGPT\n{gptResponse}\n");
 
                     await NachrichtSpeichern("You", userInput);
                     await NachrichtSpeichern("ChatGPT", gptResponse);
 
-
-                    conversation.Remove(currentMessage);
                     foreach (var message in conversation)
                     {
                         Console.WriteLine(message);
@@ -243,18 +239,6 @@ namespace Aufgabe_GSOChatBot.Model
                     Console.WriteLine($"Exception: {ex.Message}");
                     return "Error generating response";
                 }
-            }
-        }
-
-        static string GetFirstNChars(string input, int n)
-        {
-            if (!string.IsNullOrEmpty(input))
-            {
-                return input.Length >= n ? input.Substring(0, n) : input;
-            }
-            else
-            {
-                return input;
             }
         }
     }

@@ -134,7 +134,7 @@ namespace Aufgabe_GSOChatBot
             string username = Console.ReadLine();
             Console.Write("Passwort: ");
             string passwort = Console.ReadLine();
-            Console.Write("Token: ");
+            Console.Write("API-Token: ");
             string token = Console.ReadLine();
 
             User neuerUser = new User
@@ -189,7 +189,7 @@ namespace Aufgabe_GSOChatBot
                             break;
                     }
                 }
-            } while (!IsValidOption(option));
+            } while (option != "2");
         }
 
         public void AlleNachrichtenAnzeigen()
