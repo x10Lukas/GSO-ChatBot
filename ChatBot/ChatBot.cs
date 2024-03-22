@@ -159,6 +159,7 @@ namespace Aufgabe_GSOChatBot
             {
                 Console.Clear();
                 Console.WriteLine("Neuer Chat\n");
+                Console.WriteLine("Eingabe: exit  ->  beendet das Programm\n");
                 Console.Write("[");
                 Console.ForegroundColor = ConsoleColor.DarkMagenta;
                 Console.Write("1");
@@ -181,11 +182,15 @@ namespace Aufgabe_GSOChatBot
                     switch (option)
                     {
                         case "1":
+                            Console.Clear();
                             GSO_ChatBot_Chat app = new GSO_ChatBot_Chat(null);
                             app.ChatStart();
                             break;
                         case "2":
                             AlleNachrichtenAnzeigen();
+                            break;
+                        case "exit":
+                            AppStart();
                             break;
                     }
                 }
@@ -194,6 +199,7 @@ namespace Aufgabe_GSOChatBot
 
         public void AlleNachrichtenAnzeigen()
         {
+            Console.Clear();
             Console.Write("Geben Sie die Chat-ID ein: ");
             if (int.TryParse(Console.ReadLine(), out int chatId))
             {
@@ -209,7 +215,7 @@ namespace Aufgabe_GSOChatBot
 
                         foreach (var nachricht in nachrichten)
                         {
-                            Console.WriteLine($"\n{nachricht.Sender}\n{nachricht.Content}");
+                            Console.WriteLine($"\n{nachricht.Sender}\n{nachricht.Content}\n");
                         }
                         Console.ReadKey();
                         GSO_ChatBot_Chat chatBot = new GSO_ChatBot_Chat(aktiver_chat);
@@ -227,7 +233,7 @@ namespace Aufgabe_GSOChatBot
             {
                 Console.WriteLine("Ungültige Eingabe. Bitte geben Sie eine gültige Chat-ID ein.");
                 Console.ReadKey();
-                NeuerChat();
+                AlleNachrichtenAnzeigen();
             }
         }
 

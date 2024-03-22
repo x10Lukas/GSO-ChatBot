@@ -55,7 +55,7 @@ namespace Aufgabe_GSOChatBot.Model
 
             do
             {
-                Console.Write("");
+                Console.Write("\n");
                 string userInput = Console.ReadLine();
 
                 if (userInput?.ToLower() == "exit")
@@ -69,7 +69,6 @@ namespace Aufgabe_GSOChatBot.Model
                     List<string> userMessages = new List<string> { userInput };
                     string gptResponse = await GenerateGPT3Response(userMessages);
 
-                    conversation.Add($"You\n{userInput}\n");
                     conversation.Add($"ChatGPT\n{gptResponse}\n");
 
                     await NachrichtSpeichern("You", userInput);
@@ -92,8 +91,6 @@ namespace Aufgabe_GSOChatBot.Model
 
             } while (!exitChat);
 
-            Console.WriteLine("Press Enter to exit.");
-            Console.ReadKey();
             exitChat = true;
         }
 
