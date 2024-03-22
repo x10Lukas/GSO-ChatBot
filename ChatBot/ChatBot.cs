@@ -7,10 +7,8 @@ using System.Threading.Tasks;
 using System.Globalization;
 using System.Runtime.InteropServices;
 using System.Xml.Linq;
-using Aufgabe_GSOChatBot.Daten;
 using System.Text.Json;
-using Azure.AI.OpenAI;
-using Azure;
+using Aufgabe_GSOChatBot.Daten;
 using Aufgabe_GSOChatBot.Model;
 
 namespace Aufgabe_GSOChatBot
@@ -172,29 +170,29 @@ namespace Aufgabe_GSOChatBot
                 Console.Write("\n\nBitte wählen Sie eine Option: ");
                 option = Console.ReadLine();
 
-                if (!IsValidOption(option))
+
+                switch (option)
                 {
-                    Console.WriteLine("Ungültige Eingabe. Bitte erneut eingeben.");
-                    Console.ReadKey();
+                    case "1":
+                        Console.Clear();
+                        GSO_ChatBot_Chat app = new GSO_ChatBot_Chat(null);
+                        app.ChatStart();
+                        break;
+                    case "2":
+                        AlleNachrichtenAnzeigen();
+                        break;
+                           
+                    case "exit":
+                        Console.WriteLine("Gehe zurück...");
+                        Console.ReadKey();
+                        break;
+                    default:
+                        Console.WriteLine("Ungültige Eingabe. Bitte erneut eingeben.");
+                        Console.ReadKey();
+                        break;
                 }
-                else
-                {
-                    switch (option)
-                    {
-                        case "1":
-                            Console.Clear();
-                            GSO_ChatBot_Chat app = new GSO_ChatBot_Chat(null);
-                            app.ChatStart();
-                            break;
-                        case "2":
-                            AlleNachrichtenAnzeigen();
-                            break;
-                        case "exit":
-                            AppStart();
-                            break;
-                    }
-                }
-            } while (option != "2");
+                
+            } while (option != "exit");
         }
 
         public void AlleNachrichtenAnzeigen()

@@ -6,8 +6,8 @@ using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Aufgabe_GSOChatBot;
-using Aufgabe_GSOChatBot.Daten;
 using Microsoft.EntityFrameworkCore;
+using Aufgabe_GSOChatBot.Daten;
 
 namespace Aufgabe_GSOChatBot.Model
 {
@@ -55,7 +55,7 @@ namespace Aufgabe_GSOChatBot.Model
 
             do
             {
-                Console.Write("\n");
+                Console.WriteLine("");
                 string userInput = Console.ReadLine();
 
                 if (userInput?.ToLower() == "exit")
@@ -69,7 +69,7 @@ namespace Aufgabe_GSOChatBot.Model
                     List<string> userMessages = new List<string> { userInput };
                     string gptResponse = await GenerateGPT3Response(userMessages);
 
-                    conversation.Add($"ChatGPT\n{gptResponse}\n");
+                    conversation.Add($"ChatGPT\n{gptResponse}");
 
                     await NachrichtSpeichern("You", userInput);
                     await NachrichtSpeichern("ChatGPT", gptResponse);
