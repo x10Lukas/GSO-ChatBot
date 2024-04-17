@@ -69,9 +69,10 @@ namespace Aufgabe_GSOChatBot.Model
                     List<string> userMessages = new List<string> { userInput };
                     string gptResponse = await GenerateGPT3Response(userMessages);
 
+                    conversation.Add($"You\n{userInput}\n");
                     conversation.Add($"ChatGPT\n{gptResponse}");
 
-                    await NachrichtSpeichern("You", userInput);
+                    //await NachrichtSpeichern("You", userInput);
                     await NachrichtSpeichern("ChatGPT", gptResponse);
 
                     foreach (var message in conversation)
