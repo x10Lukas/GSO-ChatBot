@@ -42,27 +42,23 @@ namespace Aufgabe_GSOChatBot
                     Console.Write("\n\nBitte wählen Sie eine Option: ");
                     option = Console.ReadLine();
 
-                    if (!IsValidOption(option))
+                    switch (option)
                     {
-                        Console.WriteLine("Ungültige Eingabe. Bitte erneut eingeben.");
-                        Console.ReadKey();
+                        case "1":
+                            UserEinloggen();
+                            break;
+                        case "2":
+                            UserRegistrieren();
+                            break;
+                        case "exit":
+                            exit = true;
+                            break;
+                        default:
+                            Console.WriteLine("Ungültige Eingabe. Bitte erneut eingeben.");
+                            Console.ReadKey();
+                            break;
                     }
-                    else
-                    {
-                        switch (option)
-                        {
-                            case "1":
-                                UserEinloggen();
-                                break;
-                            case "2":
-                                UserRegistrieren();
-                                break;
-                            case "exit":
-                                exit = true;
-                                break;
-                        }
-                    }
-                } while (!IsValidOption(option));
+                } while (true);
 
             } while (!exit);
         }
@@ -73,7 +69,7 @@ namespace Aufgabe_GSOChatBot
             Console.WriteLine("Anmeldung\n");
 
             string username;
-            string passwort = "";
+            string passwort;
 
             do
             {
@@ -92,27 +88,19 @@ namespace Aufgabe_GSOChatBot
                 }
             } while (aktueller_user == null);
 
+            bool passwortRichtig = false;
+
             do
             {
                 (int, int) cPosBM = Console.GetCursorPosition();
                 Console.Write("Passwort: ");
-                ConsoleKeyInfo key;
+                passwort = PasswortAbfragen();
 
-                while ((key = Console.ReadKey(true)).Key != ConsoleKey.Enter)
+                if (aktueller_user.Passwort == passwort)
                 {
-                    if (key.Key == ConsoleKey.Backspace && passwort.Length > 0)
-                    {
-                        passwort = passwort[0..^1];
-                        Console.Write("\b \b");
-                    }
-                    else if (!char.IsControl(key.KeyChar))
-                    {
-                        passwort += key.KeyChar;
-                        Console.Write("*");
-                    }
+                    passwortRichtig = true;
                 }
-
-                if (aktueller_user.Passwort != passwort)
+                else
                 {
                     Console.WriteLine("\nUngültiges Passwort. Bitte versuche es erneut.");
                     Console.ReadKey();
@@ -120,8 +108,9 @@ namespace Aufgabe_GSOChatBot
 
                     ClearCurrentConsoleLine(cPosBM.Item2, cPosAM.Item2);
                 }
-                NeuerChat();
-            } while (aktueller_user.Passwort != passwort);
+            } while (!passwortRichtig);
+
+            NeuerChat();
         }
 
         public async void UserRegistrieren()
@@ -170,7 +159,6 @@ namespace Aufgabe_GSOChatBot
                 Console.Write("\n\nBitte wählen Sie eine Option: ");
                 option = Console.ReadLine();
 
-
                 switch (option)
                 {
                     case "1":
@@ -181,18 +169,15 @@ namespace Aufgabe_GSOChatBot
                     case "2":
                         AlleNachrichtenAnzeigen();
                         break;
-                           
                     case "exit":
-                        Console.WriteLine("Gehe zurück...");
-                        Console.ReadKey();
+                        AppStart();
                         break;
                     default:
                         Console.WriteLine("Ungültige Eingabe. Bitte erneut eingeben.");
                         Console.ReadKey();
                         break;
                 }
-                
-            } while (option != "exit");
+            } while (true);
         }
 
         public void AlleNachrichtenAnzeigen()
@@ -203,13 +188,13 @@ namespace Aufgabe_GSOChatBot
             {
                 using (var db = new GSOChatBotContext())
                 {
-                    Chat aktiver_chat =  db.Chats.FirstOrDefault(k => k.Id ==  chatId);
+                    Chat aktiver_chat = db.Chats.FirstOrDefault(k => k.Id == chatId);
                     var nachrichten = db.Nachrichten.Where(n => n.ChatId == chatId).ToList();
 
                     if (nachrichten.Any())
                     {
                         Console.Clear();
-                        Console.WriteLine($"Alle Nachrichten im Chat {chatId}:");
+                        Console.WriteLine($"Chat ID: {chatId}");
 
                         foreach (var nachricht in nachrichten)
                         {
@@ -235,9 +220,26 @@ namespace Aufgabe_GSOChatBot
             }
         }
 
-        private bool IsValidOption(string input)
+        private string PasswortAbfragen()
         {
-            return input == "1" || input == "2" || input.ToLower() == "exit";
+            string passwort = "";
+            ConsoleKeyInfo key;
+
+            while ((key = Console.ReadKey(true)).Key != ConsoleKey.Enter)
+            {
+                if (key.Key == ConsoleKey.Backspace && passwort.Length > 0)
+                {
+                    passwort = passwort[0..^1];
+                    Console.Write("\b \b");
+                }
+                else if (!char.IsControl(key.KeyChar))
+                {
+                    passwort += key.KeyChar;
+                    Console.Write("*");
+                }
+            }
+
+            return passwort;
         }
 
         public void ClearCurrentConsoleLine(int from, int to)
