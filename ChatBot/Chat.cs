@@ -124,6 +124,12 @@ namespace Aufgabe_GSOChatBot.Model
 
         private async Task ChatSpeichern()
         {
+            string GenerateRandomString(Random random, string chars, int length)
+            {
+                return new string(Enumerable.Repeat(chars, length)
+                  .Select(s => s[random.Next(s.Length)]).ToArray());
+            }
+
             var newChat = new Chat
             {
                 UserId = aktueller_user.Id,
@@ -147,12 +153,6 @@ namespace Aufgabe_GSOChatBot.Model
                     Console.WriteLine($"Inner Exception: {ex.InnerException.Message}");
                 }
             }
-        }
-
-        private string GenerateRandomString(Random random, string chars, int length)
-        {
-            return new string(Enumerable.Repeat(chars, length)
-              .Select(s => s[random.Next(s.Length)]).ToArray());
         }
 
         private async Task<string> GenerateGPT3Response(List<string> userMessages)
